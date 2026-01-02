@@ -44,6 +44,7 @@ class Game:
                 'gun': load_image('gun.png'),
                 'projectile': load_image('projectile.png'),
                 'healthbar': load_image('healthbar.png'),
+                'health': load_image('health.png'),
             }
         
         self.sfx = {
@@ -71,6 +72,12 @@ class Game:
 
         self.screenshake = 0
         self.map_id=0
+
+        self.zdravje = []
+
+        for i in range(7):
+            self.zdravje.append(self.assets['health'])
+        print(self.zdravje)
 
 
     def load_level(self, map_id):
@@ -170,6 +177,7 @@ class Game:
                         self.dead += 1
                         self.sfx['hit'].play()
                         self.screenshake = max(16, self.screenshake)
+                        self.zdravje.remove([-1])
                         for i in range(30):
                             angle = random.random() * math.pi * 2
                             speed = random.random() * 5
@@ -181,6 +189,7 @@ class Game:
                 spark.render(self.display, offset=render_scroll)
                 if kill:
                     self.sparks.remove(spark)
+
 
             display_mask = pygame.mask.from_surface(self.display)
             display_sillhouette = display_mask.to_surface(setcolor=(0, 0, 0, 180), unsetcolor=(0, 0, 0, 0))
