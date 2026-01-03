@@ -75,6 +75,9 @@ class Game:
 
         self.max_health = 11
         self.health = self.max_health
+        self.in_pomozni_level = False
+
+        self.death_count = 0
 
 
     def load_level(self, map_id):
@@ -101,7 +104,32 @@ class Game:
         self.dead = 0
         self.transition = -30
 
-        
+    def pomozni_level(self):
+        self.tilemap.load('data/maps/map.json')
+
+        self.health = self.max_health
+        self.death_count=0
+
+        self.leaf_spawners = []
+        for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
+            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
+
+        self.enemies = []
+        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)]):
+            if spawner['variant'] == 0:
+                self.player.pos = spawner['pos']
+                self.player.air_time = 0
+                
+            else:
+                self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
+
+        self.projectiles = []
+        self.particles = []
+        self.sparks = []
+
+        self.scroll = [0,0]
+        self.dead = 0
+        self.transition = -30
 
 
     def run(self):
@@ -110,6 +138,7 @@ class Game:
         pygame.mixer.music.play(-1)
 
         self.sfx['ambience'].play(-1)
+
 
         while True:
             self.display.fill((0, 0, 0, 0))
@@ -124,10 +153,18 @@ class Game:
                     self.level = min(self.level + 1, len(os.listdir('data/maps'))  - 1)
                     self.load_level(self.level)
 
+
             if self.transition < 0:
                 self.transition += 1
 
-
+            if self.health == 0 and not self.dead:
+                self.dead = True 
+                self.death_count += 1
+                if self.death_count == 1:
+                    self.pomozni_level()
+                else:
+                    self.load_level(self.level)
+                
             if self.dead:
                 self.dead += 1
                 if self.dead >= 10:
@@ -247,8 +284,5 @@ class Game:
             self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
             pygame.display.update()
             self.clock.tick(60)
-
-
-
 
 Game().run()
