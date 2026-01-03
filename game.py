@@ -73,11 +73,8 @@ class Game:
         self.screenshake = 0
         self.map_id=0
 
-        self.zdravje = []
-
-        for i in range(7):
-            self.zdravje.append(self.assets['health'])
-        print(self.zdravje)
+        self.max_health = 11
+        self.health = self.max_health
 
 
     def load_level(self, map_id):
@@ -104,6 +101,9 @@ class Game:
         self.dead = 0
         self.transition = -30
 
+        
+
+
     def run(self):
         pygame.mixer.music.load('data/music.wav')
         pygame.mixer.music.set_volume(0.5)
@@ -121,13 +121,12 @@ class Game:
             if not len(self.enemies):
                 self.transition += 1
                 if self.transition > 30:
-                    self.level += min(self.level + 1, len(os.listdir('data/maps'))  - 1)
+                    self.level = min(self.level + 1, len(os.listdir('data/maps'))  - 1)
                     self.load_level(self.level)
 
             if self.transition < 0:
                 self.transition += 1
 
-            
 
             if self.dead:
                 self.dead += 1
@@ -174,10 +173,11 @@ class Game:
                 elif abs(self.player.dashing < 50):
                     if self.player.rect().collidepoint(projectile[0]):
                         self.projectiles.remove(projectile)
-                        self.dead += 1
+                        self.health -= 1
                         self.sfx['hit'].play()
                         self.screenshake = max(16, self.screenshake)
-                        self.zdravje.remove([-1])
+                        if self.health <= 0:
+                            self.dead = 1
                         for i in range(30):
                             angle = random.random() * math.pi * 2
                             speed = random.random() * 5
@@ -204,7 +204,15 @@ class Game:
                 if kill:
                     self.particles.remove(particle)
 
-            self.display.blit(self.assets['healthbar'], ((self.display.get_width() // 2) * 0.1, -1))
+            self.display.blit(self.assets['healthbar'], ((self.display.get_width() // 2) * 0.2, -1))
+
+            bar_x = int((self.display.get_width() // 2) * 0.2)
+            bar_y = 2
+            for i in range(self.health):
+                x = bar_x + 6 + i * (self.assets['health'].get_width() + 2)
+                y = bar_y + 1
+                self.display.blit(self.assets['health'], (x, y))
+
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
