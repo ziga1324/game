@@ -79,6 +79,11 @@ class Game:
 
         self.death_count = 0
 
+        self.max_xp = 0
+        self.xp = 0
+
+        pygame.font.init()
+        self.moj_font = pygame.font.SysFont('Comic sans MS', 12)
 
     def load_level(self, map_id):
         self.tilemap.load('data/maps/' + str(map_id) + '.json')
@@ -139,6 +144,7 @@ class Game:
 
         self.in_pomozni_level = True
 
+        self.level = 0
 
     def run(self):
         pygame.mixer.music.load('data/music.wav')
@@ -146,7 +152,6 @@ class Game:
         pygame.mixer.music.play(-1)
 
         self.sfx['ambience'].play(-1)
-
 
         while True:
             self.display.fill((0, 0, 0, 0))
@@ -163,13 +168,17 @@ class Game:
             if self.transition < 0:
                 self.transition += 1
 
-            if self.health == 0 and not self.dead:
+            if self.health <= 0 and not self.dead:
                 self.dead = True 
                 self.death_count += 1
+                if self.xp>self.max_xp:
+                    self.max_xp = self.xp
+                self.xp = 0
                 if self.death_count == 1:
                     self.pomozni_level()
                 else:
                     self.load_level(self.level)
+            
                 
             if self.dead:
                 self.dead += 1
@@ -182,8 +191,8 @@ class Game:
                 for zaboj in self.zaboj_rect:
                     if self.player.rect().colliderect(zaboj):
                         self.load_level(self.level)
+
                 
-            
             self.scroll[0]+=(self.player.rect().centerx-self.display.get_width()/2-self.scroll[0])/30
             self.scroll[1]+=(self.player.rect().centery-self.display.get_height()/2-self.scroll[1])/30
             render_scroll=(int(self.scroll[0]), int(self.scroll[1]))
@@ -225,6 +234,7 @@ class Game:
                         self.health -= 1
                         self.sfx['hit'].play()
                         self.screenshake = max(16, self.screenshake)
+                        self.xp -= random.randint(15, 44)
                         if self.health <= 0:
                             self.dead = 1
                         for i in range(30):
@@ -253,14 +263,20 @@ class Game:
                 if kill:
                     self.particles.remove(particle)
 
-            self.display.blit(self.assets['healthbar'], ((self.display.get_width() // 2) * 0.2, -1))
+            self.display.blit(self.assets['healthbar'], ((self.display.get_width() // 2) * 0.27, -1))
 
-            bar_x = int((self.display.get_width() // 2) * 0.2)
+            bar_x = int((self.display.get_width() // 2) * 0.27)
             bar_y = 2
             for i in range(self.health):
                 x = bar_x + 6 + i * (self.assets['health'].get_width() + 2)
                 y = bar_y + 1
                 self.display.blit(self.assets['health'], (x, y))
+            
+            if self.in_pomozni_level:
+                self.text_povrsina = self.moj_font.render('best score: '+str(self.max_xp), False, (10, 10, 10))
+            else:
+                self.text_povrsina = self.moj_font.render(str(self.xp), False, (10, 10, 10))
+            self.display.blit(self.text_povrsina, ((self.display.get_width() // 2) - self.text_povrsina.get_width() // 2, 8))
 
 
             for event in pygame.event.get():
