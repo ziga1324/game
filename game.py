@@ -30,7 +30,7 @@ class Game:
                 "large_decor": load_images("tiles/large_decor"),
                 "stone": load_images("tiles/stone"),
                 "player":load_image("entities/player.png"),
-                "background": load_image("background.png"),
+                "background": load_image("ozadje.png"),
                 "clouds": load_images("clouds"),
                 "enemy/idle": Animation(load_images("entities/enemy/idle"), img_dur=6),
                 "enemy/run": Animation(load_images("entities/enemy/run"), img_dur=4),
@@ -179,7 +179,6 @@ class Game:
                 else:
                     self.load_level(self.level)
             
-                
             if self.dead:
                 self.dead += 1
                 if self.dead >= 10:
