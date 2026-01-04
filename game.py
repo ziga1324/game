@@ -104,11 +104,15 @@ class Game:
         self.dead = 0
         self.transition = -30
 
+        self.in_pomozni_level = False
+
     def pomozni_level(self):
         self.tilemap.load('data/maps/map.json')
 
         self.health = self.max_health
         self.death_count=0
+
+        self.zaboj_rect=[]
 
         self.leaf_spawners = []
         for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
@@ -119,9 +123,11 @@ class Game:
             if spawner['variant'] == 0:
                 self.player.pos = spawner['pos']
                 self.player.air_time = 0
-                
             else:
                 self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
+        
+        for x in self.tilemap.extract([('decor', 3)], keep=True):
+            self.zaboj_rect.append(pygame.Rect(x['pos'][0], x['pos'][1], 12, 12))
 
         self.projectiles = []
         self.particles = []
@@ -130,6 +136,8 @@ class Game:
         self.scroll = [0,0]
         self.dead = 0
         self.transition = -30
+
+        self.in_pomozni_level = True
 
 
     def run(self):
@@ -144,15 +152,13 @@ class Game:
             self.display.fill((0, 0, 0, 0))
             self.display_2.blit(self.assets["background"], (0,0))
             
-
             self.screenshake = max(0, self.screenshake - 1)
 
             if not len(self.enemies):
                 self.transition += 1
                 if self.transition > 30:
-                    self.level = min(self.level + 1, len(os.listdir('data/maps'))  - 1)
+                    self.level = (self.level + 1) % (len(os.listdir('data/maps')) - 1)
                     self.load_level(self.level)
-
 
             if self.transition < 0:
                 self.transition += 1
@@ -171,6 +177,12 @@ class Game:
                     self.transition = min(30, self.transition + 1)
                 if self.dead > 40:
                     self.load_level(self.level)
+
+            if self.in_pomozni_level:
+                for zaboj in self.zaboj_rect:
+                    if self.player.rect().colliderect(zaboj):
+                        self.load_level(self.level)
+                
             
             self.scroll[0]+=(self.player.rect().centerx-self.display.get_width()/2-self.scroll[0])/30
             self.scroll[1]+=(self.player.rect().centery-self.display.get_height()/2-self.scroll[1])/30
