@@ -67,6 +67,7 @@ class Game:
 
         self.player = Player(self, (50,50), (8,15))
 
+        self.teznost_level = "data/maps/level1_10/"
         self.level = 0
         self.load_level(self.level)
 
@@ -85,8 +86,46 @@ class Game:
         pygame.font.init()
         self.moj_font = pygame.font.SysFont('Comic sans MS', 12)
 
+    def pomozni_level(self):
+        self.tilemap.load('data/maps/0.json')
+
+        self.health = self.max_health
+        self.death_count=0
+
+        self.zaboj_rect=[]
+
+        self.leaf_spawners = []
+        for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
+            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
+
+        self.enemies = []
+        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)]):
+            if spawner['variant'] == 0:
+                self.player.pos = spawner['pos']
+                self.player.air_time = 0
+            else:
+                self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
+        
+        for x in self.tilemap.extract([('decor', 3)], keep=True):
+            self.zaboj_rect.append(pygame.Rect(x['pos'][0], x['pos'][1], 12, 12))
+
+        
+        self.seznam = ["1 - 10", "11 - 20", "21 - 30", "31 - 40", "poskusi ponovno"]
+
+        self.projectiles = []
+        self.particles = []
+        self.sparks = []
+
+        self.scroll = [0,0]
+        self.dead = 0
+        self.transition = -30
+
+        self.in_pomozni_level = True
+
+        self.level = 0
+
     def load_level(self, map_id):
-        self.tilemap.load('data/maps/' + str(map_id) + '.json')
+        self.tilemap.load(self.teznost_level + str(map_id) + '.json')
 
         self.leaf_spawners = []
         for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
@@ -111,40 +150,6 @@ class Game:
 
         self.in_pomozni_level = False
 
-    def pomozni_level(self):
-        self.tilemap.load('data/maps/map.json')
-
-        self.health = self.max_health
-        self.death_count=0
-
-        self.zaboj_rect=[]
-
-        self.leaf_spawners = []
-        for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
-            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
-
-        self.enemies = []
-        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)]):
-            if spawner['variant'] == 0:
-                self.player.pos = spawner['pos']
-                self.player.air_time = 0
-            else:
-                self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
-        
-        for x in self.tilemap.extract([('decor', 3)], keep=True):
-            self.zaboj_rect.append(pygame.Rect(x['pos'][0], x['pos'][1], 12, 12))
-
-        self.projectiles = []
-        self.particles = []
-        self.sparks = []
-
-        self.scroll = [0,0]
-        self.dead = 0
-        self.transition = -30
-
-        self.in_pomozni_level = True
-
-        self.level = 0
 
     def run(self):
         pygame.mixer.music.load('data/music.wav')
@@ -162,7 +167,7 @@ class Game:
             if not len(self.enemies):
                 self.transition += 1
                 if self.transition > 30:
-                    self.level = (self.level + 1) % (len(os.listdir('data/maps')) - 1)
+                    self.level = (self.level + 1) % (len(os.listdir(self.teznost_level)) - 1)
                     self.load_level(self.level)
 
             if self.transition < 0:
@@ -178,18 +183,35 @@ class Game:
                     self.pomozni_level()
                 else:
                     self.load_level(self.level)
-            
+             
             if self.dead:
                 self.dead += 1
                 if self.dead >= 10:
                     self.transition = min(30, self.transition + 1)
                 if self.dead > 40:
                     self.load_level(self.level)
-
+            
             if self.in_pomozni_level:
-                for zaboj in self.zaboj_rect:
-                    if self.player.rect().colliderect(zaboj):
+                for i, zaboj in enumerate(self.zaboj_rect):
+                    self.text_povrsina = self.moj_font.render(self.seznam[self.zaboj_rect.index(zaboj)], False, (10, 10, 10))
+                    x = zaboj.x + (zaboj.width - self.text_povrsina.get_width()) // 2 -render_scroll[0]
+                    y = zaboj.y - self.text_povrsina.get_height() - 4 - render_scroll[1]
+                    self.display.blit(self.text_povrsina, (x, y))
+                    print()
+                    if self.player.rect().colliderect(self.zaboj_rect[0]):
+                        self.teznost_level = 'data/maps/level1_10/'
                         self.load_level(self.level)
+                    if self.player.rect().colliderect(self.zaboj_rect[1]):
+                        self.teznost_level = 'data/maps/level11-20/'
+                        self.load_level(self.level)
+                    if self.player.rect().colliderect(self.zaboj_rect[2]):
+                        self.teznost_level = 'data/maps/level21-30/'
+                        self.load_level(self.level)
+                    if self.player.rect().colliderect(self.zaboj_rect[3]):
+                        self.teznost_level = 'data/maps/level31-40/'
+                        self.load_level(self.level)
+                if self.player.rect().colliderect(zaboj):
+                    self.load_level(self.level)
 
                 
             self.scroll[0]+=(self.player.rect().centerx-self.display.get_width()/2-self.scroll[0])/30

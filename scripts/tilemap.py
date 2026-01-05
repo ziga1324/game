@@ -34,7 +34,7 @@ class Tilemap:
                 matches.append(tile.copy())
                 if not keep:
                     self.offgrid_tiles.remove(tile)
-        for loc in list(self.tilemap):  # <-- NAPAKA: dictionary changed size during iteration
+        for loc in list(self.tilemap): 
             tile = self.tilemap[loc]
             if (tile['type'], tile['variant']) in id_pairs:
                 matches.append(tile.copy())
