@@ -109,7 +109,6 @@ class Game:
         for x in self.tilemap.extract([('decor', 3)], keep=True):
             self.zaboj_rect.append(pygame.Rect(x['pos'][0], x['pos'][1], 12, 12))
 
-        
         self.seznam = ["1 - 10", "11 - 20", "21 - 30", "31 - 40", "poskusi ponovno"]
 
         self.projectiles = []
@@ -149,7 +148,6 @@ class Game:
         self.transition = -30
 
         self.in_pomozni_level = False
-
 
     def run(self):
         pygame.mixer.music.load('data/music.wav')
@@ -194,7 +192,7 @@ class Game:
             if self.in_pomozni_level:
                 for i, zaboj in enumerate(self.zaboj_rect):
                     self.text_povrsina = self.moj_font.render(self.seznam[self.zaboj_rect.index(zaboj)], False, (10, 10, 10))
-                    x = zaboj.x + (zaboj.width - self.text_povrsina.get_width()) // 2 -render_scroll[0]
+                    x = zaboj.x + (zaboj.width - self.text_povrsina.get_width()) // 2 -render_scroll[0] + 25
                     y = zaboj.y - self.text_povrsina.get_height() - 4 - render_scroll[1]
                     self.display.blit(self.text_povrsina, (x, y))
                     print()
@@ -213,7 +211,6 @@ class Game:
                 if self.player.rect().colliderect(zaboj):
                     self.load_level(self.level)
 
-                
             self.scroll[0]+=(self.player.rect().centerx-self.display.get_width()/2-self.scroll[0])/30
             self.scroll[1]+=(self.player.rect().centery-self.display.get_height()/2-self.scroll[1])/30
             render_scroll=(int(self.scroll[0]), int(self.scroll[1]))
@@ -270,7 +267,6 @@ class Game:
                 if kill:
                     self.sparks.remove(spark)
 
-
             display_mask = pygame.mask.from_surface(self.display)
             display_sillhouette = display_mask.to_surface(setcolor=(0, 0, 0, 180), unsetcolor=(0, 0, 0, 0))
             for offset in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
@@ -299,7 +295,6 @@ class Game:
                 self.text_povrsina = self.moj_font.render(str(self.xp), False, (10, 10, 10))
             self.display.blit(self.text_povrsina, ((self.display.get_width() // 2) - self.text_povrsina.get_width() // 2, 8))
 
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -319,7 +314,6 @@ class Game:
                         self.movement[0] = False
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = False
-
 
             if self.transition:
                 transition_surf = pygame.Surface(self.display.get_size())
