@@ -45,6 +45,7 @@ class Game:
                 'projectile': load_image('projectile.png'),
                 'healthbar': load_image('healthbar.png'),
                 'health': load_image('health.png'),
+                'kovancek': Animation(load_images('entities/kovancek'), img_dur=6)
             }
         
         self.sfx = {
@@ -131,13 +132,13 @@ class Game:
             self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
 
         self.enemies = []
-        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)]):
+        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1), ('spawners', 2)]):
             if spawner['variant'] == 0:
                 self.player.pos = spawner['pos']
                 self.player.air_time = 0
-                
             else:
                 self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
+
 
         self.projectiles = []
         self.particles = []

@@ -138,6 +138,7 @@ class Enemy(PhysicsEntity):
         else:
             surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
 
+
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, "player", pos, size)
@@ -156,6 +157,7 @@ class Player(PhysicsEntity):
                 self.game.screenshake = max(16, self.game.screenshake)
             self.game.health -= self.game.health
             self.game.dead = 1
+
 
         if self.collisions["down"]:
             self.air_time=0
